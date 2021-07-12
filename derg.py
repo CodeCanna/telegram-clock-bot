@@ -14,8 +14,8 @@ def main(ss: object) -> None:
     # Create my handlers
     start_handler = CommandHandler('start', start)
     say_hi_handler = CommandHandler('hello', hello)
-    clock_in_handler = CommandHandler('clock_in', clock_in)
-    clock_out_handler = CommandHandler('clock_out', clock_out)
+    clock_in_handler = CommandHandler('clockin', clock_in)
+    clock_out_handler = CommandHandler('clockout', clock_out)
     add_research_note_handler = CommandHandler('note', add_research_note)
     # Register them with the dispatcher
     dispatcher.add_handler(start_handler)
@@ -53,8 +53,8 @@ def hello(update, context):
 
 
 def start(update, context):
-    kb = [[telegram.KeyboardButton('/clock_in')], [telegram.KeyboardButton('/Break')], [
-        telegram.KeyboardButton('/clock_out')]]
+    kb = [[telegram.KeyboardButton('/clockin')], [telegram.KeyboardButton('/Break')], [
+        telegram.KeyboardButton('/clockout')]]
     kb_markup = telegram.ReplyKeyboardMarkup(kb)
     context.bot.send_message(
         chat_id=ss['CHAT_ID'], text="Press Button", reply_markup=kb_markup)
@@ -80,7 +80,7 @@ def initialize_clock_obj() -> object:
 
 
 """
-This works the same as the clock in time except it sets a date and time for
+This sets is_clocked_in to false and calculates my time on the clock, the bot outputs the time in the clock group
 """
 def clock_out(update, context) -> None:
     try:
@@ -97,12 +97,12 @@ def clock_out(update, context) -> None:
             end_time = datetime.datetime.strptime(cl_obj['clock_out_time'], '%I:%M:%S %p')
             cl_obj['today_total_hours'] = str(abs((start_time - end_time)))
             # Send a response with the calculated hours
-            response = "You clocked out at " + str(end_time.strftime('%I:%M:%S %p')) + ".  " + "You got " + str(cl_obj['today_total_hours']) + " today."
+            response = "You clocked OUT at " + str(end_time.strftime('%I:%M:%S %p')) + ".  " + "You got " + str(cl_obj['today_total_hours']) + " today."
             context.bot.send_message(chat_id=ss["CHAT_ID"], text=response)
             json.dump(cl_obj, open('./clock_cfg.json', 'w'))
         else:
             print("You are already clocked out.")
-            context.bont.send_message(chat_id=ss['CHAT_ID'], text="You are already clocked out!")
+            context.bot.send_message(chat_id=ss['CHAT_ID'], text="You are already clocked OUT!")
     except FileNotFoundError:
         print("Clock file clock_cfg.json not found...")
         
@@ -111,17 +111,22 @@ This clocks us in, by setting the is_clocked_in field in the clock_cfg.json file
 """
 def clock_in(update, context) -> None:
     try:
-        # This sets the initial is_clocked_in to false each run
-        cl_obj = initialize_clock_obj()
-        cl_obj['date_today'] = str(datetime.datetime.now().date())
-        cl_obj['clock_in_time'] = str(datetime.datetime.now().time().strftime('%I:%M:%S %p'))
-        cl_obj['is_clocked_in'] = True
-        cl_file = open("./clock_cfg.json", 'w')
-        response = "You clocked in at " + str(cl_obj['clock_in_time'])
-        context.bot.send_message(chat_id=ss['CHAT_ID'], text=response)
-        # Write new data to json file
-        json.dump(cl_obj, cl_file)
-        cl_file.close()
+        # First check that we are NOT already clocked in
+        if not json.loads(get_json("./clock_cfg.json"))["is_clocked_in"]:
+            # This sets the initial is_clocked_in to false each run
+            cl_obj = initialize_clock_obj()
+            cl_obj['date_today'] = str(datetime.datetime.now().date())
+            cl_obj['clock_in_time'] = str(datetime.datetime.now().time().strftime('%I:%M:%S %p'))
+            cl_obj['is_clocked_in'] = True
+            cl_file = open("./clock_cfg.json", 'w')
+            response = "You clocked IN at " + str(cl_obj['clock_in_time'])
+            context.bot.send_message(chat_id=ss['CHAT_ID'], text=response)
+            # Write new data to json file
+            json.dump(cl_obj, cl_file)
+            cl_file.close()
+        else:
+            print("Already clocked in!")
+            context.bot.send_message(chat_id=ss['CHAT_ID'], text="You are already clocked IN!")
     except FileNotFoundError:
         print("Clock file clock_cfg.json not found...")
 
