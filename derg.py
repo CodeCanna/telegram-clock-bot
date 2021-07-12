@@ -126,7 +126,7 @@ def clock_in(update, context) -> None:
             cl_file.close()
         else:
             print("Already clocked in!")
-            context.bont.send_message(chat_id=ss['CHAT_ID'], text="You are already clocked out!")
+            context.bot.send_message(chat_id=ss['CHAT_ID'], text="You are already clocked out!")
     except FileNotFoundError:
         print("Clock file clock_cfg.json not found...")
 
