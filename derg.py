@@ -62,7 +62,7 @@ def start(update, context):
 """
 Create a fresh python representation of clock_cfg.json
 """
-def initialize_clock_obj() -> object:
+def initialize_clock_obj() -> dict:
     clock_obj = {
         "date_today": "",
         "clock_in_time": "",
@@ -78,11 +78,23 @@ def initialize_clock_obj() -> object:
     }
     return clock_obj
 
+def create_clock_cfg():
+    try:
+        clock_cfg = initialize_clock_obj()
+        clock_cfg_file = open("./clock_cfg.json", "x")
+        clock_cfg_file.close()
+
+        clock_cfg_file = open("./clock_cfg.json", "w")
+        json.dump(clock_cfg, clock_cfg_file)
+        clock_cfg_file.close()
+    except FileExistsError:
+        print("Clock cfg already exists, so I don't want to over-write it.")
 
 """
 This sets is_clocked_in to false and calculates my time on the clock, the bot outputs the time in the clock group
 """
 def clock_out(update, context) -> None:
+    create_clock_cfg()
     try:
         cl_obj = json.load(open("./clock_cfg.json"))
         cl_in_time = cl_obj['clock_in_time']
@@ -129,6 +141,8 @@ def clock_in(update, context) -> None:
             context.bot.send_message(chat_id=ss['CHAT_ID'], text="You are already clocked IN!")
     except FileNotFoundError:
         print("Clock file clock_cfg.json not found...")
+        create_clock_cfg()
+        print("I created a clock cfg file for you.  Please try to clock in again.")
 
 """
 This returns the JSON as str from clock_cfg.json to be used
