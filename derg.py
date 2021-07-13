@@ -94,7 +94,6 @@ def create_clock_cfg():
 This sets is_clocked_in to false and calculates my time on the clock, the bot outputs the time in the clock group
 """
 def clock_out(update, context) -> None:
-    create_clock_cfg()
     try:
         cl_obj = json.load(open("./clock_cfg.json"))
         cl_in_time = cl_obj['clock_in_time']
@@ -116,7 +115,7 @@ def clock_out(update, context) -> None:
             print("You are already clocked out.")
             context.bot.send_message(chat_id=ss['CHAT_ID'], text="You are already clocked OUT!")
     except FileNotFoundError:
-        print("Clock file clock_cfg.json not found...")
+        print("Clock file clock_cfg.json not found...This is bad, your time might have been lost...")
         
 """
 This clocks us in, by setting the is_clocked_in field in the clock_cfg.json file to true, and setting a time for clock_in_time
