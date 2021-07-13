@@ -1,4 +1,3 @@
-import telegram
 import sys
 from telegram.ext import Updater, CommandHandler
 
