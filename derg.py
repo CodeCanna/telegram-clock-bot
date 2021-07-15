@@ -16,14 +16,12 @@ def main(ss: object) -> None:
     say_hi_handler = CommandHandler('hello', hello)
     clock_in_handler = CommandHandler('clockin', clock_in)
     clock_out_handler = CommandHandler('clockout', clock_out)
-    break_handler = CommandHandler('lunch', toggle_lunch)
     add_research_note_handler = CommandHandler('note', add_research_note)
     # Register them with the dispatcher
     dispatcher.add_handler(start_handler)
     dispatcher.add_handler(say_hi_handler)
     dispatcher.add_handler(clock_in_handler)
     dispatcher.add_handler(clock_out_handler)
-    dispatcher.add_handler(break_handler)
     dispatcher.add_handler(add_research_note_handler)
     derg_updater.start_polling()
 
@@ -55,7 +53,7 @@ def hello(update, context):
 
 
 def start(update, context):
-    kb = [[telegram.KeyboardButton('/clockin')], [telegram.KeyboardButton('/lunch')], [
+    kb = [[telegram.KeyboardButton('/clockin')], [telegram.KeyboardButton('/Break')], [
         telegram.KeyboardButton('/clockout')]]
     kb_markup = telegram.ReplyKeyboardMarkup(kb)
     context.bot.send_message(
@@ -118,7 +116,7 @@ def clock_out(update, context) -> None:
             context.bot.send_message(chat_id=ss['CHAT_ID'], text="You are already clocked OUT!")
     except FileNotFoundError:
         print("Clock file clock_cfg.json not found...This is bad, your time might have been lost...")
-
+        
 """
 This clocks us in, by setting the is_clocked_in field in the clock_cfg.json file to true, and setting a time for clock_in_time
 """
@@ -145,27 +143,6 @@ def clock_in(update, context) -> None:
         create_clock_cfg()
         print("I created a clock cfg file for you.  Please try to clock in again.")
 
-def toggle_lunch(update, context) -> None:
-    try:
-        json_obj = json.loads(get_json("./clock_cfg.json"))
-
-        # Check if we are already on break
-        if json_obj['lunch']['lunch_start_time'] != "":
-            json_obj['lunch']['lunch_start_time'] = str(datetime.datetime.now().time().strftime('%I:%M:%S %p'))
-            response = 'You started lunch at {}.'.format(json_obj['lunch']['lunch_start_time'])
-            context.bot.send_message(chat_id=ss['CHAT_ID'], text=response)
-            return None
-
-        json_obj['lunch']['lunch_end_time'] = str(datetime.datetime.now().time().strftime('%I:%M:%S %p'))
-
-        lunch_start_time = datetime.datetime.strptime(json_obj['lunch']['lunch_start_time'], '%I:%M:%S %p')
-        lunch_end_time = datetime.datetime.strptime(json_obj['lunch']['lunch_end_time'], '%I:%M:%S %p')
-
-        json_obj['lunch']['lunch_total_time'] = str(abs(lunch_start_time - lunch_end_time))
-
-        response = 'Your lunch ended at {}.  You were at lunch for {}'.format(str(lunch_end_time.strftime('%I:%M:%S %p')), json_obj['lunch']['lunch_total_time'].strftime('%I:%M:%S %p')) 
-    except FileNotFoundError:
-        print("The clock_cfg.json file is missing are you sure you clocked in?")
 """
 This returns the JSON as str from clock_cfg.json to be used
 """
