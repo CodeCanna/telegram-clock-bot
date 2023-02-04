@@ -128,5 +128,5 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-./clock_cfg.json
-./secret_sauce.json
+clock_cfg.json
+secret_sauce.json
