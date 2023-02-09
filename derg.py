@@ -1,45 +1,53 @@
-import telegram
+from telegram._chat import Chat
+from telegram._update import Update
+from telegram.ext import filters, MessageHandler, ApplicationBuilder, CommandHandler, ContextTypes
 import sys
-from telegram.ext import Updater, CommandHandler
-
 import datetime
 import json
 import logging
+import asyncio
+import pathlib
 
-def main(ss: object) -> None:
-    logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-                        level=logging.INFO)
-    derg_updater = Updater(token=ss['BOT_KEY'], use_context=True)
-    dispatcher = derg_updater.dispatcher
+def main(ss: dict) -> None:
+    logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
+    application_obj = ApplicationBuilder().token(ss['BOT_KEY']).build()
+
+    handle_start = CommandHandler('start', start)
+    application_obj.add_handler(handle_start)
+    application_obj.run_polling()
+    
+    
+    # derg_updater = Updater(token=ss['BOT_KEY'], use_context=True)
+    # dispatcher = derg_updater.dispatcher
     # Create my handlers
-    start_handler = CommandHandler('start', start)
-    say_hi_handler = CommandHandler('hello', hello)
-    clock_in_handler = CommandHandler('clockin', clock_in)
-    clock_out_handler = CommandHandler('clockout', clock_out)
-    add_research_note_handler = CommandHandler('note', add_research_note)
+    # start_handler = CommandHandler('start', start)
+    # say_hi_handler = CommandHandler('hello', hello)
+    # clock_in_handler = CommandHandler('clockin', clock_in)
+    # clock_out_handler = CommandHandler('clockout', clock_out)
+    # add_research_note_handler = CommandHandler('note', add_research_note)
     # Register them with the dispatcher
-    dispatcher.add_handler(start_handler)
-    dispatcher.add_handler(say_hi_handler)
-    dispatcher.add_handler(clock_in_handler)
-    dispatcher.add_handler(clock_out_handler)
-    dispatcher.add_handler(add_research_note_handler)
-    derg_updater.start_polling()
+    # dispatcher.add_handler(start_handler)
+    # dispatcher.add_handler(say_hi_handler)
+    # dispatcher.add_handler(clock_in_handler)
+    # dispatcher.add_handler(clock_out_handler)
+    # dispatcher.add_handler(add_research_note_handler)
+    # derg_updater.start_polling()
 
 # Load Secret Sauce shall we?
 
 """
 Loads the secret sauce.
 """
-def lss(sauce_path: sys.path) -> object:
-    secret_dict = {}
+def lss(sauce_path: pathlib.Path) -> dict:
+    secret_dict: dict = {}
     try:
         # Load the secret sauce
-        secret_sauce = open(sauce_path)
-        secret_dict = json.load(secret_sauce)
-    except FileNotFoundError:
+        # secret_sauce = open(sauce_path)
+        with open(sauce_path, 'r') as sauce:
+            secret_dict = json.load(sauce)
+    except FileNotFoundError as err:
         # End if the secret sauce isn't found
-        print("The secret sauce wasn't found, exitting...")
-        exit(1)
+        print(f"The secret sauce wasn't found, exitting: {err}")
     return secret_dict
 
 # Say hello to the user if they please
@@ -51,14 +59,16 @@ def hello(update, context):
 
 # Start EX Command
 
-
+"""
 def start(update, context):
     kb = [[telegram.KeyboardButton('/clockin')], [telegram.KeyboardButton('/Break')], [
         telegram.KeyboardButton('/clockout')]]
     kb_markup = telegram.ReplyKeyboardMarkup(kb)
     context.bot.send_message(
         chat_id=ss['CHAT_ID'], text="Press Button", reply_markup=kb_markup)
-
+"""
+async def start(update_obj: Update, context: ContextTypes.DEFAULT_TYPE):
+    await context.bot.send_message(chat_id=update_obj.effective_chat.id, text="Hello, World!")
 """
 Create a fresh python representation of clock_cfg.json
 """
@@ -147,10 +157,12 @@ def clock_in(update, context) -> None:
 This returns the JSON as str from clock_cfg.json to be used
 """
 def get_json(file: sys.path) -> str:
-    file_obj = open(file, 'r')
-    file_contents = file_obj.read()
-    file_obj.close()
-    return file_contents
+    # file_obj = open(file, 'r')
+    # file_contents = file_obj.read()
+    # file_obj.close()
+    with open(file, 'r') as f:
+        return f.read()
+    # return file_contents
 
 """
 Function to add a reasearch note to the day...not working yet
@@ -170,5 +182,5 @@ def add_research_note(update, context):
 
 
 if __name__ == "__main__":
-    ss = lss("./secret_sauce.json")
+    ss = lss(pathlib.Path("./secret_sauce.json"))
     main(ss)
