@@ -94,3 +94,25 @@ class Clock:
             time_out: str | None = datetime.strptime(self.time_out, "%H:%M:%S.%f")
 
             return str((time_out - time_in) - (lunch_time_stop - lunch_time_start))
+        
+    @classmethod
+    def clocked_in(cls, clock_file: str) -> bool:
+        with open(clock_file, 'r') as clock:
+            clock_dict = json.loads(clock.read())
+
+            if clock_dict['is_clocked_in']:
+                return True
+            else:
+                return False
+            
+    @classmethod
+    def at_lunch(cls, clock_file: str) -> bool:
+        with open(clock_file, 'r') as clock:
+            clock_dict = json.loads(clock.read())
+
+            if clock_dict['lunch_time_start'] and clock_dict['is_clocked_in'] == False:
+                return True
+            else:
+                return False
+            
+    

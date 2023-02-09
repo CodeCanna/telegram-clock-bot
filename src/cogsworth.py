@@ -14,24 +14,35 @@ logging.basicConfig(
 )
 
 async def clock_in(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    date: datetime = datetime.now()
-    clock: Clock = Clock(
-        date.date(),
-        date.time(),
-        None,
-        None,
-        None,
-        True,
-        None
-    )
+    try:
+        if Clock.clocked_in('clock.json'):
+            await context.bot.send_message(
+                chat_id=update.effective_chat.id,
+                text=f"You are already clocked in!"
+            )
 
-    clock.save()
-    print("Clocked In!")
+            exit(1)
 
-    await context.bot.send_message(
-        chat_id=update.effective_chat.id,
-        text=f"Clocked in on {clock.date} at {clock.time_in}"
-    )
+        date: datetime = datetime.now()
+        clock: Clock = Clock(
+            date.date(),
+            date.time(),
+            None,
+            None,
+            None,
+            True,
+            None
+        )
+
+        clock.save()
+        print("Clocked In!")
+
+        await context.bot.send_message(
+            chat_id=update.effective_chat.id,
+            text=f"Clocked in on {clock.date} at {clock.time_in}"
+        )
+    except IOError | FileNotFoundError as err:
+        print(f"Couldn't clock you in: {err}")
 
 async def take_lunch(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     try:
@@ -100,15 +111,18 @@ async def clock_out(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
             current_date: date = datetime.strptime(clock['date'], "%Y-%m-%d") # type: ignore
             time_in: datetime = datetime.strptime(clock['time_in'], "%H:%M:%S.%f") # type: ignore
             time_out: datetime = datetime.now()
-            lunch_time_start = datetime.strptime(clock['lunch_time_start'], "%H:%M:%S.%f") if clock['lunch_time_start'] is not None else None
-            lunch_time_stop = datetime.strptime(clock['lunch_time_stop'], "%H:%M:%S.%f") if clock['lunch_time_stop'] is not None else None
+            lunch_time_start_dt = datetime.strptime(clock['lunch_time_start'], "%H:%M:%S.%f") if clock['lunch_time_start'] is not None else None
+            lunch_time_stop_dt = datetime.strptime(clock['lunch_time_stop'], "%H:%M:%S.%f") if clock['lunch_time_stop'] is not None else None
+
+            lunch_time_start = lunch_time_start_dt.time() if lunch_time_start_dt is not None else None
+            lunch_time_stop = lunch_time_stop_dt.time() if lunch_time_stop_dt is not None else None
 
             clock: Clock = Clock(
                 current_date.date(),
                 time_in.time(),
                 time_out.time(),
-                lunch_time_start.time(),
-                lunch_time_stop.time(),
+                lunch_time_start,
+                lunch_time_stop,
                 False,
                 'Notes and shit!!!'
             )
@@ -119,7 +133,7 @@ async def clock_out(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
             await context.bot.send_message(
                 chat_id=update.effective_chat.id,
-                text=f"Clocked out on {clock.date} at {clock.time_out}"
+                text=f"Clocked out on {clock.date} at {clock.time_out}.\nYou clocked {clock.total_hours}."
             )
     except IOError | FileNotFoundError as err:
         print(f"Couldn't clock out: {err}")
@@ -128,7 +142,7 @@ def work(time_to_work: float):
     time.sleep(time_to_work)
 
 def main() -> None:
-    app: Application = ApplicationBuilder().token('974207105:AAFQIf5OrnhvmEVJxG2EbF0CbpR3E3lE9a0').build()
+    app: Application = ApplicationBuilder().token('').build()
     handle_clockin = CommandHandler('in', clock_in)
     handle_clockout = CommandHandler('out', clock_out)
     handle_lunch_start = CommandHandler('lunch', take_lunch)
