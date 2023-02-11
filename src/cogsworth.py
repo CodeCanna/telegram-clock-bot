@@ -13,6 +13,11 @@ logging.basicConfig(
     level=logging.INFO
 )
 
+def secret_sauce(saucy_file: str) -> dict:
+    with open(saucy_file, 'r') as sauce:
+        ss: dict = json.loads(sauce.read())
+        return ss
+
 async def clock_in(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     try:
         if Clock.clocked_in('clock.json'):
@@ -21,7 +26,7 @@ async def clock_in(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
                 text=f"You are already clocked in!"
             )
 
-            exit(1)
+            return
 
         date: datetime = datetime.now()
         clock: Clock = Clock(
@@ -41,11 +46,18 @@ async def clock_in(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
             chat_id=update.effective_chat.id,
             text=f"Clocked in on {clock.date} at {clock.time_in}"
         )
-    except IOError | FileNotFoundError as err:
+    except IOError or FileNotFoundError as err:
         print(f"Couldn't clock you in: {err}")
 
 async def take_lunch(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     try:
+        if Clock.at_lunch('clock.json'):
+            await context.bot.send_message(
+                chat_id=update.effective_chat.id,
+                text="Already at lunch!"
+            )
+
+            return
         with open('clock.json', 'r') as clock_file:
             clock = json.loads(clock_file.read())
 
@@ -76,6 +88,13 @@ async def take_lunch(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None
 
 async def come_from_lunch(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     try:
+        if not Clock.at_lunch('clock.json'):
+            await context.bot.send_message(
+                chat_id=update.effective_chat.id,
+                text="You already are not at lunch."
+            )
+
+            return
         with open('clock.json', 'r') as clock_file:
             clock = json.loads(clock_file.read())
 
@@ -105,6 +124,13 @@ async def come_from_lunch(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
 
 async def clock_out(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     try:
+        if not Clock.clocked_in('clock.json'):
+            await context.bot.send_message(
+                chat_id=update.effective_chat.id,
+                text="Already clocked out!"
+            )
+
+            return
         with open('clock.json', 'r') as clock_file:
             clock = json.loads(clock_file.read())
             
@@ -131,18 +157,23 @@ async def clock_out(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
             print("Clocked Out!")
             print(clock.total_hours)
 
+            clock.export_csv()
+
             await context.bot.send_message(
                 chat_id=update.effective_chat.id,
                 text=f"Clocked out on {clock.date} at {clock.time_out}.\nYou clocked {clock.total_hours}."
             )
-    except IOError | FileNotFoundError as err:
+
+            await context.bot.send_document(
+                chat_id=update.effective_chat.id,
+                document=f"{clock.date}.csv",
+                caption=f"{clock.date} CSV File"
+            )
+    except IOError as err:
         print(f"Couldn't clock out: {err}")
 
-def work(time_to_work: float):
-    time.sleep(time_to_work)
-
-def main() -> None:
-    app: Application = ApplicationBuilder().token('').build()
+def main(ss: dict) -> None:
+    app: Application = ApplicationBuilder().token(ss['BOT_KEY']).build()
     handle_clockin = CommandHandler('in', clock_in)
     handle_clockout = CommandHandler('out', clock_out)
     handle_lunch_start = CommandHandler('lunch', take_lunch)
@@ -156,13 +187,5 @@ def main() -> None:
     app.run_polling()
 
 if __name__ == '__main__':
-    main()
-"""
-clock_in()
-work(60)
-take_lunch()
-work(30) # Time to take lunch for
-come_from_lunch()
-work(60)
-clock_out()
-"""
+    ss = secret_sauce('secret_sauce.json')
+    main(ss)
