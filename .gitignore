@@ -6,3 +6,4 @@ __pycache__/
 clock.json
 secret_sauce.json
 *.csv
+requirements.txt
