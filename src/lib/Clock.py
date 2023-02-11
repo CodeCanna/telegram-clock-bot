@@ -2,7 +2,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, timedelta, time, date
 # from typing import Optional
 
-import json
+import json, csv
 
 @dataclass
 class Clock:
@@ -95,6 +95,15 @@ class Clock:
 
             return str((time_out - time_in) - (lunch_time_stop - lunch_time_start))
         
+    def export_csv(self) -> None:
+        try:
+            with open(f"{self.date}.csv", 'w') as csv_file:
+                writer = csv.DictWriter(csv_file, self.to_dict().keys())
+                writer.writeheader()
+                writer.writerow(self.to_dict())
+        except IOError as err:
+            print(f"Could not export {self.date}.csv: {err}")
+        
     @classmethod
     def clocked_in(cls, clock_file: str) -> bool:
         with open(clock_file, 'r') as clock:
@@ -114,5 +123,3 @@ class Clock:
                 return True
             else:
                 return False
-            
-    
