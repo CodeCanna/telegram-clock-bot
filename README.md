@@ -11,7 +11,7 @@ Run `python src/cogsworth.py`, or on Windows `python src\cogsworth.py` and start
 * `/in` - Clocks you in
 * `/out` - Clocks you out and calucates your time with or without taking a lunch
 * `/lunch` - Clocks you out for lunch
-* `/lunchstop` - Clocks you back in from lunch and records your lunch 
+* `/lunchstop` - Clocks you back in from lunch and records your lunch times
 
 ## NOTE
 Telegram BotFather allows you to define quick command buttons so you don't have to physically type in these commands everytime.
