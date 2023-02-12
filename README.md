@@ -18,4 +18,9 @@ Telegram BotFather allows you to define quick command buttons so you don't have 
 Go the the BotFather and type `/mybots`, select your bot and hit the `Edit Bot` button, then hit `Edit Commands` and follow
 the BotFather's prompts to add the above commands to your bot. When sending them to the bot father leave off the `/`.
 
-### Example `in - Clock me in`
+### Example 
+When bot father asks you to give a list of commands give them in this format
+`in - Clock me in`
+`out - Clock me out`
+`lunch - Start lunch`
+`lunchstop - End Lunch`
