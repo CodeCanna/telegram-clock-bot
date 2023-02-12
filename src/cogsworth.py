@@ -10,7 +10,10 @@ import time
 
 """
 cogsworth.py is the actual script ran by the telegram bot.  It works by creating instances of Clock based on the current clock.json
-status.
+state and re-saving over the old clock.json state.
+
+The clock.json file is only used to keep state and is cleared after clocking out for the day.  A CSV is generated with the
+data generated from use throughout the day and the clock.json file is "reset".
 """
 
 logging.basicConfig(
@@ -200,6 +203,8 @@ async def clock_out(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
             clock.save()
             print("Clocked Out!")
             print(clock.total_hours)
+
+            # Generate a CSV representation of our Clock object
             clock.export_csv()
 
             await context.bot.send_message(
@@ -207,6 +212,7 @@ async def clock_out(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
                 text=f"Clocked out on {clock.date} at {clock.time_out}.\nYou clocked {clock.total_hours}."
             )
 
+            # Send our generated CSV to the user
             await context.bot.send_document(
                 chat_id=update.effective_chat.id,
                 document=f"{clock.date}.csv",
@@ -220,11 +226,14 @@ async def clock_out(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
 def main(ss: dict) -> None:
     app: Application = ApplicationBuilder().token(ss['BOT_KEY']).build()
+
+    # Define our bot options
     handle_clockin = CommandHandler('in', clock_in)
     handle_clockout = CommandHandler('out', clock_out)
     handle_lunch_start = CommandHandler('lunch', take_lunch)
     handle_lunch_stop = CommandHandler('lunchstop', come_from_lunch)
 
+    # Add our handlers for each option
     app.add_handler(handle_clockin)
     app.add_handler(handle_clockout)
     app.add_handler(handle_lunch_start)

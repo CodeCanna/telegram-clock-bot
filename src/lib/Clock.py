@@ -2,9 +2,12 @@ from dataclasses import dataclass, field
 from datetime import datetime, timedelta, time, date
 from os import path
 from json import JSONDecodeError
-
 import json, csv
 
+"""
+The clock data class holds and generates our clock's state before saving it to the clock.json file.
+There are also several helper classmethods for checking for certain conditions of the clock.json file.
+"""
 @dataclass
 class Clock:
     _date: date | None
@@ -127,7 +130,8 @@ class Clock:
             time_out: str | None = datetime.strptime(self.time_out, "%H:%M:%S.%f")
 
             return str((time_out - time_in) - (lunch_time_stop - lunch_time_start))
-        
+    
+    # Export our current dataclass state into a CSV file
     def export_csv(self) -> None:
         try:
             with open(f"{self.date}.csv", 'w') as csv_file:
@@ -149,7 +153,7 @@ class Clock:
         self.total_hours = None
         self.save()
 
-        
+    # Detect a clocked in state
     @classmethod
     def clocked_in(cls, clock_file: str) -> bool:
         try:
@@ -164,7 +168,8 @@ class Clock:
             print("clock.json not found attempting to create...")
             cls.create_clockfile()
             print("clock.json created try clocking in again.")
-            
+
+    # Detect at lunch state   
     @classmethod
     def at_lunch(cls, clock_file: str) -> bool:
         with open(clock_file, 'r') as clock:
@@ -174,7 +179,8 @@ class Clock:
                 return True
             else:
                 return False
-            
+
+    # Check for existence of the clock.json file   
     @classmethod
     def clockfile_detected(cls) -> bool:
         if path.exists('clock.json'):
@@ -199,7 +205,8 @@ class Clock:
                         return True
         except IOError as err:
             print(f"There was a problem detecting if clock.json has been cleared: {err}")
-        
+    
+    # Generate a fresh clock.json file if needed
     @classmethod
     def create_clockfile(cls) -> None:
         try:
