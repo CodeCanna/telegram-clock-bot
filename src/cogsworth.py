@@ -8,6 +8,11 @@ import asyncio
 import json
 import time
 
+"""
+cogsworth.py is the actual script ran by the telegram bot.  It works by creating instances of Clock based on the current clock.json
+status.
+"""
+
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     level=logging.INFO
@@ -44,6 +49,7 @@ async def clock_in(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
                 text=f"You are already clocked in!"
             )
 
+            # Return without doing anything because I'm already clocked in.
             return
 
         date: datetime = datetime.now()
