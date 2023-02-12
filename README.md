@@ -20,7 +20,7 @@ the BotFather's prompts to add the above commands to your bot. When sending them
 
 ### Example 
 When bot father asks you to give a list of commands give them in this format
-`in - Clock me in`
-`out - Clock me out`
-`lunch - Start lunch`
-`lunchstop - End Lunch`
+* `in - Clock me in`
+* `out - Clock me out`
+* `lunch - Start lunch`
+* `lunchstop - End Lunch`
