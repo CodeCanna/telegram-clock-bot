@@ -13,6 +13,7 @@ logging.basicConfig(
     level=logging.INFO
 )
 
+# Load and read the secret sauce I.E. API key
 def secret_sauce(saucy_file: str) -> dict:
     with open(saucy_file, 'r') as sauce:
         ss: dict = json.loads(sauce.read())
@@ -20,7 +21,24 @@ def secret_sauce(saucy_file: str) -> dict:
 
 async def clock_in(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     try:
-        if Clock.clocked_in('clock.json'):
+        # If clock.json is not found
+        if not Clock.clockfile_detected():
+            await context.bot.send_message(
+                chat_id=update.effective_chat.id,
+                text=f"clock.json not found.  Attempting to create..."
+            )
+
+            # Create clock.json file
+            Clock.create_clockfile()
+
+            await context.bot.send_message(
+                chat_id=update.effective_chat.id,
+                text=f"Successfully created clock.json try clocking in again."
+            )
+
+            # Return to allow the user to try clocking in again.
+            return
+        elif Clock.clocked_in('clock.json'):
             await context.bot.send_message(
                 chat_id=update.effective_chat.id,
                 text=f"You are already clocked in!"
@@ -48,6 +66,13 @@ async def clock_in(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         )
     except IOError or FileNotFoundError as err:
         print(f"Couldn't clock you in: {err}")
+        try:
+            print("Attempting to create clock.json.")
+            with open('clock.json', 'w') as clock_file:
+                print("clock.json file created please try clocking in again.")
+        except IOError as err:
+            print(f"Failed creating clock.json: {err}")
+
 
 async def take_lunch(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     try:
@@ -156,7 +181,6 @@ async def clock_out(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
             clock.save()
             print("Clocked Out!")
             print(clock.total_hours)
-
             clock.export_csv()
 
             await context.bot.send_message(
@@ -169,6 +193,9 @@ async def clock_out(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
                 document=f"{clock.date}.csv",
                 caption=f"{clock.date} CSV File"
             )
+
+            # Clear the clock.json file to reuse.
+            clock.clear_clock()
     except IOError as err:
         print(f"Couldn't clock out: {err}")
 

@@ -1,12 +1,13 @@
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta, time, date
-# from typing import Optional
+from os import path
+from json import JSONDecodeError
 
 import json, csv
 
 @dataclass
 class Clock:
-    _date: date
+    _date: date | None
     _time_in: time | None
     _time_out: time | None
     _lunch_time_start: time | None
@@ -23,30 +24,58 @@ class Clock:
     @property
     def date(self) -> str | None:
         return str(self._date) if self._date else None
+    
+    @date.setter
+    def date(self, new_value: datetime | None) -> None:
+        self._date = new_value
 
     @property
     def time_in(self) -> str | None:
         return str(self._time_in) if self._time_in else None
+    
+    @time_in.setter
+    def time_in(self, new_value: time | None) -> None:
+        self._time_in = new_value
 
     @property
     def time_out(self) -> str | None:
         return str(self._time_out) if self._time_out else None
+    
+    @time_out.setter
+    def time_out(self, new_value: time | None) -> None:
+        self._time_out = new_value
 
     @property
     def lunch_time_start(self) -> str | None:
         return str(self._lunch_time_start) if self._lunch_time_start else None
+    
+    @lunch_time_start.setter
+    def lunch_time_start(self, new_value: time | None) -> None:
+        self._lunch_time_start = new_value
 
     @property
     def lunch_time_stop(self) -> str | None:
         return str(self._lunch_time_stop) if self._lunch_time_stop else None
+    
+    @lunch_time_stop.setter
+    def lunch_time_stop(self, new_value: time | None) -> None:
+        self._lunch_time_stop = new_value
 
     @property
     def is_clocked_in(self) -> bool:
         return self._is_clocked_in
+    
+    @is_clocked_in.setter
+    def is_clocked_in(self, new_value: bool | None) -> None:
+        self._is_clocked_in = new_value
 
     @property
     def total_hours(self) -> int | None:
         return self._total_hours if self._total_hours is not None else None
+    
+    @total_hours.setter
+    def total_hours(self, new_value: int | None) -> None:
+        self._total_hours = new_value
     
     @property
     def lunch_total_time(self) -> int | None:
@@ -55,6 +84,10 @@ class Clock:
     @property
     def work_notes(self) -> str | None:
         return self._work_notes if self._work_notes else None
+    
+    @work_notes.setter
+    def work_notes(self, new_value: str | None) -> None:
+        self._work_notes = new_value
 
     # Save the current class state to clock.json
     def save(self):
@@ -103,16 +136,34 @@ class Clock:
                 writer.writerow(self.to_dict())
         except IOError as err:
             print(f"Could not export {self.date}.csv: {err}")
+
+    # Clear the clock.json file for new use.
+    def clear_clock(self):
+        self.date = None
+        self.time_in = None
+        self.time_out = None
+        self.lunch_time_start = None
+        self.lunch_time_stop = None
+        self.is_clocked_in = None
+        self.work_notes = None
+        self.total_hours = None
+        self.save()
+
         
     @classmethod
     def clocked_in(cls, clock_file: str) -> bool:
-        with open(clock_file, 'r') as clock:
-            clock_dict = json.loads(clock.read())
+        try:
+            with open(clock_file, 'r') as clock:
+                clock_dict = json.loads(clock.read())
 
-            if clock_dict['is_clocked_in']:
-                return True
-            else:
-                return False
+                if clock_dict['is_clocked_in']:
+                    return True
+                else:
+                    return False
+        except JSONDecodeError or FileNotFoundError as err:
+            print("clock.json not found attempting to create...")
+            cls.create_clockfile()
+            print("clock.json created try clocking in again.")
             
     @classmethod
     def at_lunch(cls, clock_file: str) -> bool:
@@ -123,3 +174,18 @@ class Clock:
                 return True
             else:
                 return False
+            
+    @classmethod
+    def clockfile_detected(cls) -> bool:
+        if path.exists('clock.json'):
+            return True
+        else:
+            return False
+        
+    @classmethod
+    def create_clockfile(cls) -> None:
+        try:
+            with open('clock.json', 'w') as clock_file:
+                clock_file.write('')
+        except IOError as err:
+            print(f"Failed to create clock.json:{err}")
