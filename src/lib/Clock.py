@@ -183,6 +183,23 @@ class Clock:
             return False
         
     @classmethod
+    def clock_cleared(cls) -> bool:
+        try:
+            if not cls.clockfile_detected():
+                return True
+            
+            with open('clock.json', 'r') as clock_file:
+                clock = json.loads(clock_file.read())
+
+                for key in clock.keys():
+                    if clock[key] is not None:
+                        return False
+                    else:
+                        return True
+        except IOError as err:
+            print(f"There was a problem detecting if clock.json has been cleared: {err}")
+        
+    @classmethod
     def create_clockfile(cls) -> None:
         try:
             with open('clock.json', 'w') as clock_file:

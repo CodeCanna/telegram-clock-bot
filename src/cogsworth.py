@@ -87,7 +87,12 @@ async def take_lunch(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None
                 chat_id=update.effective_chat.id,
                 text="Already at lunch!"
             )
-
+            return
+        elif Clock.clock_cleared():
+            await context.bot.send_message(
+                chat_id=update.effective_chat.id,
+                text="Can't go to lunch if you haven't clocked in!"
+            )
             return
         with open('clock.json', 'r') as clock_file:
             clock = json.loads(clock_file.read())
