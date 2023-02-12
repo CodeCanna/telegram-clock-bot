@@ -181,7 +181,8 @@ class Clock:
             return True
         else:
             return False
-        
+
+    # Check if all the fields in clock.json are None/null 
     @classmethod
     def clock_cleared(cls) -> bool:
         try:
@@ -206,3 +207,16 @@ class Clock:
                 clock_file.write('')
         except IOError as err:
             print(f"Failed to create clock.json:{err}")
+
+    # Return a dictionary representation of the current clock.json state
+    @classmethod
+    def dict_from_file(cls, clock_file: str) -> dict:
+        try:
+            with open(clock_file, 'r') as clock:
+                clock_dict: dict = json.loads(clock.read())
+                return clock_dict
+        except FileNotFoundError:
+            print("clock.json not found, creating")
+            cls.create_clockfile()
+        except IOError as err:
+            print(f"Couldn't read clock.json file: {err}")

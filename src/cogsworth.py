@@ -51,6 +51,14 @@ async def clock_in(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
             # Return without doing anything because I'm already clocked in.
             return
+        elif Clock.dict_from_file('clock.json')['lunch_time_start'] and Clock.dict_from_file('clock.json')['lunch_time_stop'] is None and Clock.dict_from_file('clock.json')['is_clocked_in'] is False:
+            await context.bot.send_message(
+                chat_id=update.effective_chat.id,
+                text="You are at lunch, can't clock you in without ending your lunch."
+            )
+
+            # Return without clocking me in because I'm at lunch.
+            return
 
         date: datetime = datetime.now()
         clock: Clock = Clock(
@@ -127,7 +135,7 @@ async def come_from_lunch(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
         if not Clock.at_lunch('clock.json'):
             await context.bot.send_message(
                 chat_id=update.effective_chat.id,
-                text="You already are not at lunch."
+                text="You aren't at lunch."
             )
 
             return
