@@ -114,7 +114,7 @@ async def take_lunch(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None
                 text=f"Taking lunch on {clock.date} at {clock.lunch_time_start}"
             )
 
-    except IOError | FileNotFoundError as err:
+    except IOError or FileNotFoundError as err:
         print(f"Couldn't go to lunch:{err}")
 
 async def come_from_lunch(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -150,7 +150,7 @@ async def come_from_lunch(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
                 chat_id=update.effective_chat.id,
                 text=f"Came back from lunch on {clock.date} at {clock.lunch_time_stop}"
             )
-    except IOError | FileNotFoundError as err:
+    except IOError or FileNotFoundError as err:
         print(f"Couldn't clock back in from lunch:{err}")
 
 async def clock_out(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
