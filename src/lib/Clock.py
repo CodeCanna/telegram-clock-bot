@@ -144,7 +144,7 @@ class Clock:
         self.time_out = None
         self.lunch_time_start = None
         self.lunch_time_stop = None
-        self.is_clocked_in = None
+        self.is_clocked_in = False
         self.work_notes = None
         self.total_hours = None
         self.save()
