@@ -4,5 +4,4 @@
 /.vscode/
 __pycache__/
 clock.json
-secret_sauce.json
 *.csv

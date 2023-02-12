@@ -224,6 +224,22 @@ async def clock_out(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     except IOError as err:
         print(f"Couldn't clock out: {err}")
 
+"""
+For this program to work you need a Telegram API key and your own telegram bot, you can get them by talking to the "Bot Father", Telegrams own bot for
+making new bots.  Once you get an API key copy and paste it where it says YOUR_API_KEY_HERE in the secret_sauce.json file.
+
+After doing this you should be ready to run this bot, run this file and start sending commands to your new bot!
+
+Available Commands:
+/in
+/out
+/lunch
+/lunchstop
+
+NOTE: You can add these commands as buttons on your bot by talking to the bot father use the /mybots command select your bot click or tap "Edit Bot" then
+"Edit Commands" and follow BotFather's instructions for adding new commands to your bot.  This way you don't have to manually type in the commands as that can get
+tedious.
+"""
 def main(ss: dict) -> None:
     app: Application = ApplicationBuilder().token(ss['BOT_KEY']).build()
 
