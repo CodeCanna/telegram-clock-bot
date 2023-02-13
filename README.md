@@ -5,6 +5,7 @@ A simple bot to track my time at work.
 Clone the project in the directory you want it to live, paste in your Telegram API key you got from BotFather into
 the secret_sauce.json file where it says `YOUR_API_KEY_HERE`; keep the double quotes.
 
+`cd` into the directory you just cloned.
 Run `python src/cogsworth.py`, or on Windows `python src\cogsworth.py` and start your bot from the telegram app using `/start`.
 
 # Available Commands
